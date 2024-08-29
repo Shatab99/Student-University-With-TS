@@ -19,6 +19,10 @@ const createAcademicSemester = catchAsync(async (req, res) => {
 
 
 const getAllSemesters = catchAsync(async (req, res) => {
+    const {role} = req.user;
+    if(role !== "admin"){
+        throw new Error("Only admin can see semesters!!")
+    }
     res.send(await AcademicSemesterModel.find());
 })
 

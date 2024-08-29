@@ -5,11 +5,11 @@ import config from "../../config";
 import { UserModel } from "./user.model";
 import { StudentModel } from "../students/student.model";
 import catchAsync from "../../Utils/catchAsync.global";
-import { generateStudentId } from "./user.utils";
+import {  generateStudentId } from "./user.utils";
 import { AcademicSemesterModel } from "../Academic/academic.model";
 import mongoose from "mongoose";
 
-const createUser = catchAsync(async (req, res) => {
+const createUser = catchAsync(async (req, res, next) => {
   const session = await mongoose.startSession();
 
   try {
@@ -48,33 +48,36 @@ const createUser = catchAsync(async (req, res) => {
       await session.abortTransaction();
       res.status(400).send({ message: "User creation failed" });
     }
-  } catch (err : any) {
+  } catch (err: any) {
     await session.abortTransaction();
-    res.status(500).send({ message: "An error occurred", error: err.message });
+    next(err)
   } finally {
     session.endSession();
   }
 });
 
-const deleteUser = catchAsync(async (req, res)=>{
+const deleteUser = catchAsync(async (req, res) => {
 
-    const session = await mongoose.startSession()
-    try{
-        session.startTransaction();
-        const id = req.params.id;
-        const resultUser = await UserModel.findOneAndUpdate({id : id}, {isDeleted : true},{new:true , session})
-        const resultStudent = await StudentModel.findOneAndUpdate({id : id}, {isDeleted : true}, {new: true , session})
-        await session.commitTransaction()
-        res.send({resultStudent, resultUser})
-    }catch(err : any){
-        await session.abortTransaction()
-        console.log(err.message)
-    }
-    finally{
-        session.endSession()
-    }
+  const session = await mongoose.startSession()
+  try {
+    session.startTransaction();
+    const id = req.params.id;
+    const resultUser = await UserModel.findOneAndUpdate({ id: id }, { isDeleted: true }, { new: true, session })
+    const resultStudent = await StudentModel.findOneAndUpdate({ id: id }, { isDeleted: true }, { new: true, session })
+    await session.commitTransaction()
+    res.send({ resultStudent, resultUser })
+  } catch (err: any) {
+    await session.abortTransaction()
+    console.log(err.message)
+  }
+  finally {
+    session.endSession()
+  }
 })
 
+
+
+
 export const UserController = {
-  createUser,deleteUser
+  createUser, deleteUser
 };

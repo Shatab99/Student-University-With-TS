@@ -42,7 +42,7 @@ const studentSchema = z.object({
             address: stuAddressSchema,
             guardianInfo: stuGuardianSchema,
             localGuardian: stuLocalGuardianSchema
-        }),
+        }).optional(),
     })
 });
 
