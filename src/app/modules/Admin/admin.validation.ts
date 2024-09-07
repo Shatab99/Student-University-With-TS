@@ -28,6 +28,12 @@ const adminCreateValidation = z.object({
     })
 });
 
+const updateStatus = z.object({
+    body : z.object({
+        status: z.enum(['in-progress', 'blocked']),
+    })
+})
+
 export const adminValidation = {
-    adminCreateValidation
+    adminCreateValidation,updateStatus
 }

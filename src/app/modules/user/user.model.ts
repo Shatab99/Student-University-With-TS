@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt'
 
 const userSchema = new Schema<TUser, User>({
   id: { type: String, unique: true },
+  email: { type: String, unique: true },
   password: { type: String, required: true, select: 0 },
   needsPasswordChange: { type: Boolean, required: true },
   passwordChangedAt: { type: Date },

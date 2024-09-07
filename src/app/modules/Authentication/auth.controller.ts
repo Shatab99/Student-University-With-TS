@@ -4,6 +4,7 @@ import { UserModel } from "../user/user.model";
 import bcrypt from "bcrypt"
 import { createToken } from "./auth.utils";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import sendEmail from "../../Utils/sendMail";
 
 
 
@@ -71,7 +72,7 @@ const refreshToken = catchAsync(async (req, res) => {
 
     const decode = jwt.verify(Refresh_Token, config.jwtSecret as string) as JwtPayload;
 
-    const { id,role, iat } = decode as JwtPayload;
+    const { id, role, iat } = decode as JwtPayload;
 
     //Inspect the user
 
@@ -100,7 +101,71 @@ const refreshToken = catchAsync(async (req, res) => {
 })
 
 
+const forgetPass = catchAsync(async (req, res) => {
+    const { id } = req.body
+
+    const user = await UserModel.isUserExists(id)
+
+    if (!user) {
+        throw new Error(`User not found by this ${id}`)
+    }
+
+    if (user.isDeleted) {
+        throw new Error("This user is already deleted !! ")
+    }
+    if (user.status === 'blocked') {
+        throw new Error("This user is Blocked by admin!! ")
+    }
+
+
+    const resetToken = createToken({ id: user.id, role: user.role }, config.jwtSecret as string, "10min")
+
+    const resetUrl = `http://localhost:3000/id=${user.id}&token=${resetToken}`
+
+    sendEmail(user.email, resetUrl)
+
+    res.send(resetUrl)
+
+
+})
+
+const resetPass = catchAsync(async (req, res) => {
+    const token = req.headers.authorization
+    const id = req.body.id;
+    const newPassword = req.body.newPassword
+
+    const user = await UserModel.isUserExists(id);
+
+    if (!user) {
+        throw new Error(`User not found by this ${id}`)
+    }
+
+    if (user.isDeleted) {
+        throw new Error("This user is already deleted !! ")
+    }
+    if (user.status === 'blocked') {
+        throw new Error("This user is Blocked by admin!! ")
+    }
+
+    const { id: tokenId } = jwt.verify(token as string, config.jwtSecret as string) as JwtPayload
+
+    if (id !== tokenId) {
+        throw new Error("Unauthorized !! ")
+    }
+
+    const hash =await bcrypt.hash(newPassword, 10)
+
+    const updatePassword = await UserModel.findOneAndUpdate({ id: user.id, role: user.role }, {
+        password: hash,
+        needsPasswordChange: false,
+        passwordChangedAt: new Date()
+    })
+
+
+    res.send(updatePassword)
+})
+
 
 export const authController = {
-    logInUser, changePassword, refreshToken
+    logInUser, changePassword, refreshToken, resetPass, forgetPass
 }

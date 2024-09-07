@@ -135,6 +135,9 @@ const studentSchema = new Schema<Student>({
         type: stuLocalGuardian,
         required: true
     },
+    profileImage: {
+        type: String,
+    },
     isDeleted:{
         type: Boolean,
         required :true

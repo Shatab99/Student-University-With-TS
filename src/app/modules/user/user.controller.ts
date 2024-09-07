@@ -5,15 +5,19 @@ import config from "../../config";
 import { UserModel } from "./user.model";
 import { StudentModel } from "../students/student.model";
 import catchAsync from "../../Utils/catchAsync.global";
-import {  generateStudentId } from "./user.utils";
+import { generateStudentId } from "./user.utils";
 import { AcademicSemesterModel } from "../Academic/academic.model";
 import mongoose from "mongoose";
+import { sendImage } from "../../Utils/sendImage";
+
 
 const createUser = catchAsync(async (req, res, next) => {
+
   const session = await mongoose.startSession();
 
   try {
     session.startTransaction();
+    const file = req.file
     const userData = req.body;
     const studentDataFromRequest = userData.student;
 
@@ -25,12 +29,16 @@ const createUser = catchAsync(async (req, res, next) => {
     // Create user object
     const user: Partial<TUser> = {
       id: studentId,
+      email: studentDataFromRequest.email,
       password: userData.password || config.defaultPass,
       needsPasswordChange: userData.needsPasswordChange,
       role: "student",
       status: userData.status,
       isDeleted: userData.isDeleted,
     };
+
+    //upload  image
+    const profile = await sendImage(file?.path as string, user?.id as string)
 
     const userResult = await UserModel.create([user], { session });
     if (userResult.length) {
@@ -39,7 +47,11 @@ const createUser = catchAsync(async (req, res, next) => {
         ...studentDataFromRequest,
         userId: userResult[0]._id,
         id: studentId,
+        profileImage: profile?.secure_url
       };
+
+
+
 
       const newStudent = await StudentModel.create([studentData], { session });
       await session.commitTransaction();
@@ -48,6 +60,8 @@ const createUser = catchAsync(async (req, res, next) => {
       await session.abortTransaction();
       res.status(400).send({ message: "User creation failed" });
     }
+
+
   } catch (err: any) {
     await session.abortTransaction();
     next(err)
@@ -55,6 +69,15 @@ const createUser = catchAsync(async (req, res, next) => {
     session.endSession();
   }
 });
+
+const getMe = catchAsync(async (req, res) => {
+  const { id } = req.user
+
+  const result = await StudentModel.findOne({ id })
+  res.send(result)
+
+
+})
 
 const deleteUser = catchAsync(async (req, res) => {
 
@@ -79,5 +102,5 @@ const deleteUser = catchAsync(async (req, res) => {
 
 
 export const UserController = {
-  createUser, deleteUser
+  createUser, deleteUser, getMe
 };

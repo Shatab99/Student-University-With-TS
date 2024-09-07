@@ -43,5 +43,6 @@ export type Student = {
     address: Address;
     guardianInfo: Guardian;
     localGuardian: LocalGuardian;
+    profileImage : string
     isDeleted : boolean
 }

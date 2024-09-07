@@ -9,16 +9,23 @@ const createAdmin = catchAsync(async (req, res) => {
     const adminId = await generateAdminId();
 
     //create user 
-    const userResult = await UserModel.create({ id: adminId, ...userData })
+    const userResult = await UserModel.create({ id: adminId, email: admin.email, ...userData })
 
     const userInfo = await UserModel.findOne({ id: adminId })
 
-    const adminResult = await AdminModel.create({ id: adminId, user : userInfo?._id , ...admin })
+    const adminResult = await AdminModel.create({ id: adminId, user: userInfo?._id, ...admin })
 
 
     res.send({ adminResult, userResult })
 })
 
+const changeStatus = catchAsync(async (req, res) => {
+    const id = req.params.id
+    const {status} = req.body;
+    const result = await UserModel.findByIdAndUpdate(id,{status}) 
+    res.send(result)
+})
+
 export const AdminController = {
-    createAdmin
+    createAdmin,changeStatus
 }
