@@ -6,8 +6,9 @@ import { USER_ROLE } from "../user/user.const";
 import { enrollCourseController } from "./EnrollCourse.Controller";
 
 const router = Router()
-const { createValidation } = enrollCourseValidation
+const { createValidation,updateCoourseMarks } = enrollCourseValidation
 
 router.post('/create-enroll-course',auth(USER_ROLE.student), validate(createValidation), enrollCourseController.create )
+router.patch('/update-enroll-course',auth(USER_ROLE.admin), validate(updateCoourseMarks), enrollCourseController.updateEnrollCourse )
 
 export const enrollCourseRouter = router

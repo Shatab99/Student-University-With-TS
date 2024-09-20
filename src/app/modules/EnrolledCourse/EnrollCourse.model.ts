@@ -2,11 +2,11 @@ import { Schema, model } from "mongoose";
 
 // Define the TcourseMarks subdocument schema
 const courseMarksSchema = new Schema({
-    classTest1: { type: Number, default: 0 },
-    mid: { type: Number, default: 0 },
-    classTest2: { type: Number, default: 0 },
-    final: { type: Number, default: 0 },
-},{_id : false});
+    classTest1: { type: Number, min: 0, max: 10, default: 0 },
+    mid: { type: Number, min: 0, max: 10, default: 0 },
+    classTest2: { type: Number, min: 0, max: 30, default: 0 },
+    final: { type: Number, min: 0, max: 50, default: 0 },
+}, { _id: false });
 
 // Define the TEnrollCourse schema
 const enrollCourseSchema = new Schema({
@@ -18,8 +18,8 @@ const enrollCourseSchema = new Schema({
     student: { type: Schema.Types.ObjectId, ref: 'Student' },
     faculty: { type: Schema.Types.ObjectId, ref: 'Faculty' },
     isEnrolled: { type: Boolean, default: false },
-    courseMarks: { type: courseMarksSchema,default:{} },
-    grade: { type: String, enum: ['A', 'B', 'C', 'D', 'F', 'NA'], default: 'NA' },
+    courseMarks: { type: courseMarksSchema, default: {} },
+    grade: { type: String, enum: ['A+','A', 'B', 'C', 'D', 'F', 'NA'], default: 'NA' },
     gradePoints: { type: Number, min: 2, max: 4, default: null },
     isCompleted: { type: Boolean, default: false },
 }, { timestamps: true });
